@@ -12,7 +12,7 @@ import WebKit
 /// }
 /// ```
 @available(iOS 16.4, macOS 13.3, *)
-public struct WebView {
+public struct WebView: WebViewRepresentable {
     var configuration: WKWebViewConfiguration
 
     private var initialRequest: URLRequest?
@@ -109,6 +109,22 @@ public struct WebView {
         modified.isRefreshable = true
         return modified
     }
+
+    #if canImport(UIKit)
+    public func appearance<T>(
+        _ keyPath: ReferenceWritableKeyPath<UIView, T>,
+        _ value: T
+    ) -> ModifiedAppearance<Self, T> {
+        .init(content: self, keyPath: keyPath, value: value)
+    }
+    #elseif canImport(AppKit)
+    public func appearance<T>(
+        _ keyPath: ReferenceWritableKeyPath<NSView, T>,
+        _ value: T
+    ) -> ModifiedAppearance<Self, T> {
+        ModifiedAppearance(content: self, keyPath: keyPath, value: value)
+    }
+    #endif
 
     @MainActor
     func applyModifiers(to webView: EnhancedWKWebView) {
